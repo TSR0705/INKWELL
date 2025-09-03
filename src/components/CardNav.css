@@ -1,0 +1,244 @@
+/* CardNav.css
+   Styled for Inkwell palette. Uses --light-*/--dark-* variables defined in index.css
+*/
+
+.card-nav-container {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 980px;
+  z-index: 99;
+  box-sizing: border-box;
+  pointer-events: none; /* top bar handles pointer events */
+}
+
+.card-nav {
+  display: block;
+  height: 60px;
+  padding: 0;
+  background-color: var(--light-card);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+  position: relative;
+  overflow: hidden;
+  will-change: height;
+  pointer-events: auto;
+}
+
+html.dark .card-nav {
+  background-color: var(--dark-card);
+  color: var(--text-dark);
+}
+
+.card-nav-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem 0.5rem 1rem;
+  z-index: 2;
+}
+
+/* Hamburger */
+.hamburger-menu {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 6px;
+  color: var(--text-light);
+}
+
+.hamburger-line {
+  width: 28px;
+  height: 3px;
+  background-color: currentColor;
+  transition: transform 0.25s ease, opacity 0.2s ease, margin 0.3s ease;
+  transform-origin: 50% 50%;
+  border-radius: 2px;
+}
+
+.hamburger-menu.open .hamburger-line:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+.hamburger-menu.open .hamburger-line:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+/* Logo centered */
+.logo-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.logo {
+  height: 30px;
+  display: block;
+}
+
+/* fallback logo circle */
+.ink-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--light-accent);
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+/* CTA */
+.card-nav-cta-button {
+  background-color: var(--light-accent);
+  color: var(--text-light);
+  border: none;
+  border-radius: calc(0.75rem - 0.35rem);
+  padding: 0 1rem;
+  height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+  pointer-events: auto;
+}
+.card-nav-cta-button:hover {
+  background-color: var(--light-hover);
+}
+html.dark .card-nav-cta-button {
+  background-color: var(--dark-accent);
+  color: var(--text-dark);
+}
+html.dark .card-nav-cta-button:hover {
+  background-color: var(--dark-hover);
+}
+
+/* Content area */
+.card-nav-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+  padding: 0.6rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.card-nav.open .card-nav-content {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Individual nav card */
+.nav-card {
+  height: 100%;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: calc(0.75rem - 0.16rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  gap: 8px;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Label */
+.nav-card-label {
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+/* Links column */
+.nav-card-links {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-card-link {
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+}
+.nav-card-link:hover {
+  opacity: 0.85;
+  transform: translateX(4px);
+}
+
+/* Smaller screens */
+@media (max-width: 768px) {
+  .card-nav-container {
+    width: 96%;
+    top: 1.1rem;
+  }
+
+  .card-nav-top {
+    padding: 0.35rem 0.9rem;
+  }
+
+  .hamburger-menu {
+    order: 2;
+  }
+
+  .logo-container {
+    position: static;
+    transform: none;
+    order: 1;
+  }
+
+  .card-nav-cta-button {
+    display: none;
+  }
+
+  .card-nav-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0.5rem;
+    bottom: 0;
+    justify-content: flex-start;
+  }
+
+  .nav-card {
+    height: auto;
+    min-height: 84px;
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .nav-card-label {
+    font-size: 18px;
+  }
+
+  .nav-card-link {
+    font-size: 15px;
+  }
+}

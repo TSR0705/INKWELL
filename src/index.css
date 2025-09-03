@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================
+   Inkwell Custom Theme
+   ========================== */
+
+:root {
+  /* Light Mode */
+  --light-bg: #F9F5F6;
+  --light-card: #F8E8EE;
+  --light-hover: #FDCEDF;
+  --light-accent: #F2BED1;
+  --text-light: #000000;
+
+  /* Dark Mode */
+  --dark-bg: #495C83;
+  --dark-card: #7A86B6;
+  --dark-hover: #A8A4CE;
+  --dark-accent: #C8B6E2;
+  --text-dark: #ffffff;
+}
+
+/* Base background + text */
+html {
+  background-color: var(--light-bg);
+  color: var(--text-light);
+}
+
+html.dark {
+  background-color: var(--dark-bg);
+  color: var(--text-dark);
+}
+
+/* ==========================
+   Utility Classes for Inkwell
+   ========================== */
+
+/* Light Mode */
+.bg-light-bg {
+  background-color: var(--light-bg);
+}
+.bg-light-card {
+  background-color: var(--light-card);
+}
+.bg-light-hover {
+  background-color: var(--light-hover);
+}
+.bg-light-accent {
+  background-color: var(--light-accent);
+}
+.text-light-text {
+  color: var(--text-light);
+}
+
+/* Dark Mode */
+.bg-dark-bg {
+  background-color: var(--dark-bg);
+}
+.bg-dark-card {
+  background-color: var(--dark-card);
+}
+.bg-dark-hover {
+  background-color: var(--dark-hover);
+}
+.bg-dark-accent {
+  background-color: var(--dark-accent);
+}
+.text-dark-text {
+  color: var(--text-dark);
+}
+
+/* ==========================
+   Card Styling (Reusable)
+   ========================== */
+.inkwell-card {
+  @apply rounded-2xl shadow-md p-4 transition;
+  background-color: var(--light-card);
+  color: var(--text-light);
+}
+html.dark .inkwell-card {
+  background-color: var(--dark-card);
+  color: var(--text-dark);
+}
+.inkwell-card:hover {
+  background-color: var(--light-hover);
+}
+html.dark .inkwell-card:hover {
+  background-color: var(--dark-hover);
+}
+
+/* ==========================
+   Button Styling (Reusable)
+   ========================== */
+.inkwell-btn {
+  @apply mt-3 px-4 py-2 rounded-xl transition;
+  background-color: var(--light-accent);
+  color: var(--text-light);
+}
+html.dark .inkwell-btn {
+  background-color: var(--dark-accent);
+  color: var(--text-dark);
+}
+.inkwell-btn:hover {
+  background-color: var(--light-hover);
+}
+html.dark .inkwell-btn:hover {
+  background-color: var(--dark-hover);
+}
