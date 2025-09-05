@@ -440,21 +440,7 @@ export default function Navbar({ current = "home", user = {} }) {
               </li>
 
               {/* Mobile theme & profile quick actions */}
-              <li className="px-3 pt-4 grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setDark((d) => !d)}
-                  className="px-3 py-2 rounded-lg bg-white/70 dark:bg-black/40 hover:bg-white/90 dark:hover:bg-black/60 transition"
-                >
-                  {dark ? "Light Mode" : "Dark Mode"}
-                </button>
-                <a
-                  href="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-3 py-2 rounded-lg bg-[#F2BED1] hover:bg-[#FDCEDF] dark:bg-[#C8B6E2] dark:hover:bg-[#A8A4CE] text-black text-center transition"
-                >
-                  Profile
-                </a>
-              </li>
+             
             </motion.ul>
           </motion.aside>
         )}

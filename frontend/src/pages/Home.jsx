@@ -203,13 +203,61 @@ function Navbar({
               </AnimatePresence>
             </div>
 
-            {/* profile */}
-            <div className="relative ml-2">
-              <button onClick={()=>{}} className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/60 dark:bg-black/30 hover:ring-2 hover:ring-[#F2BED1] transition">
-                {user?.avatar ? <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover"/> : <div className="w-8 h-8 rounded-full bg-[#F2BED1] flex items-center justify-center">{(user?.name||"U").split(" ").map(n=>n[0]).join("").slice(0,2)}</div>}
-                <ChevronDown className="w-4 h-4 opacity-70"/>
-              </button>
-            </div>
+           {/* profile */}
+<div className="relative ml-2">
+  <button
+    onClick={() => setProfileOpen((o) => !o)}
+    className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/60 dark:bg-black/30 hover:ring-2 hover:ring-[#F2BED1] transition"
+  >
+    {user?.avatar ? (
+      <img
+        src={user.avatar}
+        alt="avatar"
+        className="w-8 h-8 rounded-full object-cover"
+      />
+    ) : (
+      <div className="w-8 h-8 rounded-full bg-[#F2BED1] flex items-center justify-center">
+        {(user?.name || "U")
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .slice(0, 2)}
+      </div>
+    )}
+    <ChevronDown className="w-4 h-4 opacity-70" />
+  </button>
+
+  <AnimatePresence>
+    {profileOpen && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: -4 }}
+        className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl bg-white/95 dark:bg-[#111827]/95 overflow-hidden"
+      >
+        <a
+          href="/profile"
+          className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-[#F8E8EE] dark:hover:bg-[#2b2f55]"
+        >
+          <User className="w-4 h-4" /> Profile
+        </a>
+        <a
+          href="/settings"
+          className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-[#F8E8EE] dark:hover:bg-[#2b2f55]"
+        >
+          <Settings className="w-4 h-4" /> Settings
+        </a>
+        <a
+          href="/logout"
+          className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-[#F8E8EE] dark:hover:bg-[#2b2f55]"
+        >
+          <LogOut className="w-4 h-4" /> Logout
+        </a>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+
 
             {/* mobile menu toggler */}
             <div className="md:hidden ml-2">
