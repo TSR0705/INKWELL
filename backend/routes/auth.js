@@ -7,14 +7,29 @@ const User = require('../models/User');
 const sendOTPEmail = require('../utils/sendOTPEmail');
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
 
-// ✅ Generate 6-digit OTP
+/* ---------- Helpers ---------- */
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Password strength check
 const isStrongPassword = (pwd) => {
   const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   return re.test(pwd);
+};
+
+const generateTokens = async (user, oldRefreshToken = null) => {
+  const accessToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+  // replace old refresh token if rotating
+  if (oldRefreshToken) {
+    user.refreshTokens = user.refreshTokens.filter((t) => t.token !== oldRefreshToken);
+  }
+
+  user.refreshTokens.push({ token: refreshToken });
+  await user.save();
+
+  return { accessToken, refreshToken };
 };
 
 /* ------------------------------------------------
@@ -39,10 +54,9 @@ router.post('/signup', async (req, res) => {
 
     const user = new User({ fullName, email, password });
 
-    // Generate OTP for verification
     const otp = generateOTP();
     user.otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 min
+    user.otpExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     await sendOTPEmail(email, otp);
@@ -75,9 +89,13 @@ router.post('/verify-otp', async (req, res) => {
     user.otpExpires = null;
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    const { accessToken, refreshToken } = await generateTokens(user);
 
-    res.json({ token, user: { id: user._id, fullName: user.fullName, email: user.email } });
+    res.json({
+      accessToken,
+      refreshToken,
+      user: { id: user._id, fullName: user.fullName, email: user.email },
+    });
   } catch (err) {
     console.error('OTP Verification Error:', err);
     res.status(500).json({ message: 'Server Error' });
@@ -98,8 +116,13 @@ router.post('/login', async (req, res) => {
     const isMatch = await user.matchPassword(password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, fullName: user.fullName, email: user.email } });
+    const { accessToken, refreshToken } = await generateTokens(user);
+
+    res.json({
+      accessToken,
+      refreshToken,
+      user: { id: user._id, fullName: user.fullName, email: user.email },
+    });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ message: 'Server Error' });
@@ -119,7 +142,7 @@ router.post('/forgot-password', async (req, res) => {
 
     const otp = generateOTP();
     user.otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 min
+    user.otpExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     await sendOTPEmail(email, otp);
@@ -152,7 +175,7 @@ router.post('/reset-password', async (req, res) => {
     const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
     if (hashedOtp !== user.otpHash) return res.status(400).json({ message: 'Incorrect OTP' });
 
-    user.password = newPassword; // will be hashed in pre-save
+    user.password = newPassword;
     user.otpHash = null;
     user.otpExpires = null;
     await user.save();
@@ -161,6 +184,52 @@ router.post('/reset-password', async (req, res) => {
   } catch (err) {
     console.error('Reset Password Error:', err);
     res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+/* ------------------------------------------------
+   REFRESH TOKEN
+--------------------------------------------------*/
+router.post('/refresh', async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(401).json({ message: 'User not found' });
+
+    const validToken = user.refreshTokens.find((t) => t.token === refreshToken);
+    if (!validToken) return res.status(401).json({ message: 'Invalid refresh token' });
+
+    const { accessToken, refreshToken: newRefreshToken } = await generateTokens(user, refreshToken);
+
+    res.json({ accessToken, refreshToken: newRefreshToken });
+  } catch (err) {
+    console.error('Refresh Error:', err);
+    res.status(401).json({ message: 'Invalid or expired refresh token' });
+  }
+});
+
+/* ------------------------------------------------
+   LOGOUT
+--------------------------------------------------*/
+router.post('/logout', async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(401).json({ message: 'User not found' });
+
+    user.refreshTokens = user.refreshTokens.filter((t) => t.token !== refreshToken);
+    await user.save();
+
+    res.json({ message: 'Logged out (refresh token revoked)' });
+  } catch (err) {
+    console.error('Logout Error:', err);
+    res.status(401).json({ message: 'Invalid refresh token' });
   }
 });
 

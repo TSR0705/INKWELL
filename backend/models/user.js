@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 // Password & email validation regex
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]{8,}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]{8,}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const UserSchema = new mongoose.Schema(
@@ -27,7 +28,6 @@ const UserSchema = new mongoose.Schema(
       minlength: [8, 'Password must be at least 8 characters long'],
       validate: {
         validator: function (value) {
-          // Only validate if creating new or password modified
           if (this.isNew || this.isModified('password')) {
             return PASSWORD_REGEX.test(value);
           }
@@ -50,6 +50,14 @@ const UserSchema = new mongoose.Schema(
     profilePic: { type: String, default: null }, // e.g., image URL
     bio: { type: String, maxlength: 300, default: null },
     lastLogin: { type: Date, default: null },
+
+    // 🔑 Refresh token storage
+    refreshTokens: [
+      {
+        token: { type: String },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -64,7 +72,7 @@ UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
-    const salt = await bcrypt.genSalt(12); // stronger salt rounds
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (err) {
@@ -79,14 +87,11 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Increment login attempts & lock if needed
 UserSchema.methods.incrementLoginAttempts = async function () {
-  // If previously locked but lock expired, reset
   if (this.lockUntil && this.lockUntil < Date.now()) {
     this.loginAttempts = 1;
     this.lockUntil = undefined;
   } else {
     this.loginAttempts += 1;
-
-    // Lock account if too many failed attempts
     if (this.loginAttempts >= 5 && !this.isLocked) {
       this.lockUntil = Date.now() + 30 * 60 * 1000; // 30 min lock
     }
@@ -99,7 +104,8 @@ UserSchema.methods.generateResetToken = function () {
   const rawToken = crypto.randomBytes(32).toString('hex');
   this.otpHash = crypto.createHash('sha256').update(rawToken).digest('hex');
   this.otpExpires = Date.now() + 10 * 60 * 1000; // valid for 10 min
-  return rawToken; // return plain token for email
+  return rawToken;
 };
 
-module.exports = mongoose.models.User || mongoose.model('User', UserSchema);
+module.exports =
+  mongoose.models.User || mongoose.model('User', UserSchema);
